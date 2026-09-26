@@ -1,4 +1,5 @@
 node_modules/
+dist/
 .cert/
 .claude/
 .DS_Store

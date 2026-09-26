@@ -12,7 +12,6 @@ import path from 'node:path';
 import os from 'node:os';
 import { fileURLToPath } from 'node:url';
 import { WebSocketServer } from 'ws';
-import QRCode from 'qrcode';
 import selfsigned from 'selfsigned';
 
 const ROOT = path.dirname(fileURLToPath(import.meta.url));
@@ -95,6 +94,7 @@ async function loadCertificate() {
 const MIME = {
   '.html': 'text/html; charset=utf-8',
   '.js': 'text/javascript; charset=utf-8',
+  '.mjs': 'text/javascript; charset=utf-8',
   '.css': 'text/css; charset=utf-8',
   '.json': 'application/json',
   '.png': 'image/png',
@@ -106,6 +106,8 @@ const MIME = {
 const MOUNTS = [
   ['/vendor/three/addons/', path.join(ROOT, 'node_modules/three/examples/jsm')],
   ['/vendor/three/', path.join(ROOT, 'node_modules/three/build')],
+  ['/vendor/peerjs/', path.join(ROOT, 'node_modules/peerjs/dist')],
+  ['/vendor/uqr/', path.join(ROOT, 'node_modules/uqr/dist')],
   ['/', path.join(ROOT, 'public')],
 ];
 
@@ -119,7 +121,11 @@ function serveStatic(req, res) {
   }
   if (pathname === '/') pathname = '/index.html';
   // Short URL that is easy to type on a phone: https://IP:8443/c
-  if (pathname === '/c' || pathname === '/c/') pathname = '/controller.html';
+  if (pathname === '/c' || pathname === '/c/') {
+    const query = new URL(req.url, 'http://x').search;
+    res.writeHead(302, { Location: `/controller.html${query}` }).end();
+    return;
+  }
 
   for (const [prefix, dir] of MOUNTS) {
     if (!pathname.startsWith(prefix)) continue;
@@ -161,7 +167,7 @@ function send(ws, msg) {
   if (ws && ws.readyState === ws.OPEN) ws.send(typeof msg === 'string' ? msg : JSON.stringify(msg));
 }
 
-async function attachHost(ws, requested, lang) {
+function attachHost(ws, requested, lang) {
   let code = requested;
   let room = code && rooms.get(code);
   // If the requested room already has an active screen, create a new one. If it
@@ -178,8 +184,7 @@ async function attachHost(ws, requested, lang) {
   // The phone opens the controller in the same language as the screen.
   const langParam = /^[a-z]{2}$/.test(lang || '') ? `&lang=${lang}` : '';
   const url = `https://${LAN_IP}:${HTTPS_PORT}/controller.html?room=${code}${langParam}`;
-  const qr = await QRCode.toDataURL(url, { margin: 1, width: 360, color: { dark: '#0b1d33', light: '#ffffff' } });
-  send(ws, { t: 'room', code, url, qr, ctrl: Boolean(room.ctrl) });
+  send(ws, { t: 'room', code, url, ctrl: Boolean(room.ctrl) });
   send(room.ctrl, { t: 'host', on: true });
 
   ws.on('message', (data) => send(room.ctrl, data.toString()));

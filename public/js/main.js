@@ -7,66 +7,47 @@ import { RACKET_SKINS, hexToCss } from './characters.js';
 import { SURFACES } from './physics.js';
 import { createRacketPreview } from './racketPreview.js';
 import { t, lang, applyI18n, setLang } from './i18n.js';
+import { createHostLink, mode } from './net.js';
+import { renderSVG } from '../vendor/uqr/index.mjs';
 
 const $ = (id) => document.getElementById(id);
 
 applyI18n();
 document.title = t('title');
+// Online (peer-to-peer) there is no local certificate to accept.
+if (mode === 'p2p') $('steps').innerHTML = t('menu.stepsOnline');
 
 const world = createWorld($('game'));
 const sfx = new Sfx();
 const hud = createHud();
 
 // ---------------------------------------------------------------------------
-// Server connection (this screen is the room "host")
+// Link to the phone (this screen hosts the room; see net.js)
 // ---------------------------------------------------------------------------
 
-const link = {
-  ws: null,
-  room: sessionStorage.getItem('tt-room') || '',
-  controller: false,
-  retry: 500,
-
-  connect() {
-    const proto = location.protocol === 'https:' ? 'wss' : 'ws';
-    const qs = new URLSearchParams({ role: 'host', lang });
-    if (this.room) qs.set('room', this.room);
-    const ws = new WebSocket(`${proto}://${location.host}/ws?${qs}`);
-    this.ws = ws;
-    ws.onopen = () => (this.retry = 500);
-    ws.onmessage = (e) => onMessage(JSON.parse(e.data));
-    ws.onclose = () => {
-      setController(false);
-      setTimeout(() => this.connect(), this.retry);
-      this.retry = Math.min(this.retry * 2, 5000);
-    };
+let controllerOn = false;
+const link = createHostLink({
+  lang,
+  onRoom({ code, url }) {
+    const svg = renderSVG(url, { border: 1, whiteColor: '#ffffff', blackColor: '#0b1d33' });
+    $('qr').src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+    $('code').textContent = code;
+    // Short, typeable address: .../c opens the controller.
+    $('url').textContent = url.replace(/\?.*$/, '').replace(/controller\.html$/, 'c');
   },
-
-  send(msg) {
-    if (this.ws?.readyState === WebSocket.OPEN && this.controller) this.ws.send(JSON.stringify(msg));
-  },
-};
+  onController: (on) => setController(on),
+  onMessage: (msg) => onMessage(msg),
+});
 
 const match = new Match({ world, sfx, hud, notify: (m) => link.send(m) });
 
 function onMessage(msg) {
   switch (msg.t) {
-    case 'room':
-      link.room = msg.code;
-      sessionStorage.setItem('tt-room', msg.code);
-      $('qr').src = msg.qr;
-      $('code').textContent = msg.code;
-      $('url').textContent = msg.url.replace(/\?.*$/, '').replace('/controller.html', '/c');
-      setController(msg.ctrl);
-      break;
-    case 'ctrl':
-      setController(msg.on);
-      break;
     case 'q':
-      match.setPhoneQuaternion(msg.q);
+      if (Array.isArray(msg.q) && msg.q.length === 4) match.setPhoneQuaternion(msg.q);
       break;
     case 'swing':
-      onSwing(msg.p, 'phone');
+      onSwing(Math.min(1, Math.max(0, Number(msg.p) || 0)), 'phone');
       break;
     case 'hello':
     case 'cfg':
@@ -79,8 +60,8 @@ function onMessage(msg) {
 }
 
 function setController(on) {
-  const was = link.controller;
-  link.controller = on;
+  const was = controllerOn;
+  controllerOn = on;
   if (!on) match.clearPhone();
   document.body.classList.toggle('has-ctrl', on);
   $('conn').textContent = t(on ? 'hud.phoneMode' : 'hud.mouseMode');
@@ -265,7 +246,7 @@ function frame(now) {
 }
 requestAnimationFrame(frame);
 
-link.connect();
+setController(false);
 preview.start();
 
 // Console debugging: tt.paused = true; tt.tick(30) advances 30 frames.

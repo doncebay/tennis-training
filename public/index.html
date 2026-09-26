@@ -6,9 +6,9 @@
     <title>Tennis Training</title>
     <meta name="description" content="First-person tennis in the browser. Your phone is the racket: its gyroscope drives the swing." />
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎾</text></svg>" />
-    <link rel="stylesheet" href="/css/game.css" />
+    <link rel="stylesheet" href="css/game.css" />
     <script type="importmap">
-      { "imports": { "three": "/vendor/three/three.module.js", "three/addons/": "/vendor/three/addons/" } }
+      { "imports": { "three": "./vendor/three/three.module.js", "three/addons/": "./vendor/three/addons/" } }
     </script>
   </head>
   <body>
@@ -67,7 +67,7 @@
             <div id="ctrl-status" class="status" data-i18n="menu.statusWaiting">Waiting for the phone…</div>
             <details class="steps">
               <summary data-i18n="menu.stepsTitle">Step by step</summary>
-              <ol data-i18n-html="menu.steps"></ol>
+              <ol id="steps" data-i18n-html="menu.steps"></ol>
             </details>
           </section>
 
@@ -157,6 +157,6 @@
       </div>
     </div>
 
-    <script type="module" src="/js/main.js"></script>
+    <script type="module" src="js/main.js"></script>
   </body>
 </html>

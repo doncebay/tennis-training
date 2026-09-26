@@ -5,6 +5,10 @@ Wii Sports-style motion controls with nothing to install: the game runs on your
 computer or TV, and your phone's gyroscope streams the racket's orientation and
 your swings over Wi-Fi in real time.
 
+### ▶️ [Play now: doncebay.github.io/tennis-training](https://doncebay.github.io/tennis-training/)
+
+Open it on your computer, scan the QR code with your phone, and swing. Nothing to install.
+
 [Español](README.es.md)
 
 ![Gameplay on clay](docs/screenshots/gameplay-clay.jpg)
@@ -37,9 +41,21 @@ your swings over Wi-Fi in real time.
   like the Wiimote's speaker.
 - **English and Spanish**, detected from the browser (switchable in the menu).
 - **Playable without a phone** using the mouse or keyboard.
+- **Play online or offline**: the hosted version connects phone and screen
+  directly (WebRTC); the bundled Node server works on a local network, even
+  without internet.
 - No build step, no frameworks: plain ES modules + [three.js](https://threejs.org).
 
 ## Quick start
+
+### Play online
+
+1. On your computer, open **[doncebay.github.io/tennis-training](https://doncebay.github.io/tennis-training/)**.
+2. Scan the QR code with your phone (ideally on the same Wi-Fi as the computer).
+3. Tap **Connect**, allow motion access, point at the screen and tap **Calibrate**.
+4. Hold the phone like a racket handle and **swing** to start.
+
+### Run it yourself
 
 Requirements: [Node.js](https://nodejs.org) 18 or newer, and a phone on the same Wi-Fi network as your computer.
 
@@ -80,6 +96,16 @@ No phone? Move the mouse and **click** or press **Space** to hit
 
 ## How it works
 
+The screen and the phone need a live link. There are two interchangeable
+transports (`public/js/net.js`), with the same messages on both:
+
+- **Online (GitHub Pages)**: a static site. The phone connects straight to the
+  screen over a WebRTC data channel; the free [PeerJS](https://peerjs.com)
+  broker only introduces the two devices. GitHub Pages provides real HTTPS, so
+  there is no certificate warning.
+- **Local server (`npm start`)**: `server.js` relays messages over WebSocket
+  and serves HTTPS with a self-signed certificate. It works without internet.
+
 ```
 Phone (controller.html)                       Screen (index.html)
  deviceorientation ─► quaternion ──┐          ┌─► 3D racket mirrors the phone
@@ -89,6 +115,9 @@ Phone (controller.html)                       Screen (index.html)
  vibration + "pock" ◄──────────────┘          └── "hit", "point", "hint"
 ```
 
+- **`public/js/net.js`** is the screen ↔ phone transport (WebRTC or WebSocket).
+- **`scripts/build-static.js`** builds the static, peer-to-peer site that the
+  GitHub Actions workflow publishes to Pages on every push to `main`.
 - **`server.js`** serves the app over HTTP (`:8080`) and HTTPS (`:8443`),
   generates a self-signed certificate for your LAN IP on first run, and pairs a
   screen with a phone in 4-letter rooms, relaying messages over WebSocket.
@@ -120,7 +149,12 @@ Add `?lang=en` or `?lang=es` to any URL to force a language.
 
 ## Troubleshooting
 
-- **The phone can't connect.** Make sure it is on the same Wi-Fi and that the IP
+- **Online: the phone can't find the screen.** Check the code, and put both
+  devices on the same Wi-Fi: there is no relay server, so some networks can't
+  connect two devices directly. Hotel, office and café Wi-Fi often block
+  device-to-device traffic; a phone hotspot with the computer connected to it
+  usually works.
+- **Local server: the phone can't connect.** Make sure it is on the same Wi-Fi and that the IP
   in the QR code is your computer's. If not, run `HOST_IP=192.168.x.x npm start`.
   On macOS, allow incoming connections for Node if the firewall asks.
 - **iPhone: no motion permission.** Settings → Safari → Motion & Orientation
@@ -133,7 +167,8 @@ Add `?lang=en` or `?lang=es` to any URL to force a language.
 ## Contributing
 
 Issues and pull requests are welcome. There is no build step: edit the files in
-`public/` and reload. To add a language, add a block to `public/js/i18n.js` and
+`public/` and reload (`npm start`). Add `?mode=p2p` to the URL to try the online
+transport locally. To add a language, add a block to `public/js/i18n.js` and
 a button to the language switch in `public/index.html`.
 
 ## License

@@ -1,6 +1,7 @@
 // Phone controller: reads the gyroscope, turns it into the racket's orientation
 // (a quaternion), detects swings and sends everything to the game screen.
 import { t, applyI18n } from './i18n.js';
+import { createControllerLink } from './net.js';
 
 applyI18n();
 document.title = t('c.pageTitle');
@@ -9,7 +10,7 @@ const $ = (id) => document.getElementById(id);
 const DEG = Math.PI / 180;
 
 const state = {
-  ws: null,
+  link: null,
   room: '',
   hand: Number(localStorage.getItem('tt-hand') || 1),
   threshold: Number(localStorage.getItem('tt-sens') || 300), // deg/s needed to count as a swing
@@ -21,7 +22,6 @@ const state = {
   motionSeen: false,
   audio: null,
   wakeLock: null,
-  retry: 500,
   joined: false,
 };
 
@@ -115,7 +115,7 @@ function onOrientation(e) {
   state.q = qmul(qAxis(0, 1, 0, -state.yawOffset), state.rawQ);
 
   const now = performance.now();
-  if (now - state.lastSend >= 14 && state.ws?.readyState === WebSocket.OPEN && state.ws.bufferedAmount < 2048) {
+  if (now - state.lastSend >= 14 && state.link?.canSend()) {
     state.lastSend = now;
     send({ t: 'q', q: state.q.map((v) => Math.round(v * 1e4) / 1e4) });
   }
@@ -179,31 +179,25 @@ function calibrate(silent = false) {
 // ---------------------------------------------------------------------------
 
 function send(msg) {
-  if (state.ws?.readyState === WebSocket.OPEN) state.ws.send(JSON.stringify(msg));
+  state.link?.send(msg);
 }
 
 function connect() {
-  const qs = new URLSearchParams({ role: 'ctrl', room: state.room });
-  const proto = location.protocol === 'https:' ? 'wss' : 'ws';
-  const ws = new WebSocket(`${proto}://${location.host}/ws?${qs}`);
-  state.ws = ws;
-  setStatus(t('c.connecting'));
-  ws.onopen = () => (state.retry = 500);
-  ws.onmessage = (e) => onMessage(JSON.parse(e.data));
-  ws.onclose = (e) => {
-    state.joined = false;
-    if (e.code === 4004) {
-      showScreen('connect');
-      return;
-    }
-    if (e.code === 4000) {
-      setStatus(t('c.replaced'), 'bad');
-      return;
-    }
-    setStatus(t('c.reconnecting'), 'bad');
-    setTimeout(connect, state.retry);
-    state.retry = Math.min(state.retry * 2, 5000);
-  };
+  state.link?.close();
+  state.link = createControllerLink({
+    room: state.room,
+    onMessage,
+    onStatus(status) {
+      if (status !== 'connecting') state.joined = false;
+      if (status === 'no-room') showScreen('connect');
+      else if (status === 'connecting') setStatus(t('c.connecting'));
+      else if (status === 'replaced') setStatus(t('c.replaced'), 'bad');
+      else if (status === 'unreachable') {
+        setStatus(t('c.reconnecting'), 'bad');
+        setHint(t('c.unreachable'));
+      } else setStatus(t('c.reconnecting'), 'bad');
+    },
+  });
 }
 
 function onMessage(m) {
@@ -423,7 +417,7 @@ $('tap').addEventListener('click', () => {
 });
 
 document.addEventListener('visibilitychange', () => {
-  if (document.visibilityState === 'visible' && state.ws) keepAwake();
+  if (document.visibilityState === 'visible' && state.link) keepAwake();
 });
 
 // Debug readout in Settings

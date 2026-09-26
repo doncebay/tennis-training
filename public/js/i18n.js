@@ -21,6 +21,11 @@ const DICT = {
       '<li>Tap <b>Connect</b> and allow motion access.</li>' +
       '<li>Point the top of the phone at the screen and tap <b>Calibrate</b>.</li>' +
       '<li>Hold it like a racket handle and <b>swing</b>.</li>',
+    'menu.stepsOnline':
+      '<li>Scan the QR code with your phone (the same Wi-Fi as this computer works best).</li>' +
+      '<li>Tap <b>Connect</b> and allow motion access.</li>' +
+      '<li>Point the top of the phone at the screen and tap <b>Calibrate</b>.</li>' +
+      '<li>Hold it like a racket handle and <b>swing</b>.</li>',
     'menu.step2': 'Set up the match',
     'menu.court': 'Court',
     'menu.racket': 'Racket',
@@ -144,8 +149,9 @@ const DICT = {
     'c.errHttps': 'Open this page over https:// to use the gyroscope.',
     'c.errPermission': 'No motion permission. On iPhone: Settings → Safari → Motion & Orientation Access, then reload.',
     'c.errSensors': 'Could not enable the gyroscope.',
-    'c.errNoRoom': 'Room {code} does not exist. Check the code on the screen.',
+    'c.errNoRoom': "Couldn't find the screen with code {code}. Check the code and that the phone is on the same Wi-Fi as the computer.",
     'c.noGyro': 'No gyroscope data. Are you on a phone? You can use the "Hit" button.',
+    'c.unreachable': "Can't reach the screen. Put the phone on the same Wi-Fi as the computer.",
     'c.forehand': 'Forehand',
     'c.backhand': 'Backhand',
     'c.overWin': 'You won the match! 🏆 Swing for a rematch',
@@ -168,6 +174,11 @@ const DICT = {
     'menu.steps':
       '<li>Celular en la <b>misma Wi-Fi</b>; escanea el QR.</li>' +
       '<li>Si sale un aviso de seguridad: <b>Avanzado → Continuar</b> (certificado local).</li>' +
+      '<li>Toca <b>Conectar</b> y acepta el permiso de movimiento.</li>' +
+      '<li>Apunta la punta del celular a la pantalla y toca <b>Calibrar</b>.</li>' +
+      '<li>Sostenlo como el mango de la raqueta y haz <b>swing</b>.</li>',
+    'menu.stepsOnline':
+      '<li>Escanea el QR con tu celular (mejor si está en la misma Wi-Fi que esta computadora).</li>' +
       '<li>Toca <b>Conectar</b> y acepta el permiso de movimiento.</li>' +
       '<li>Apunta la punta del celular a la pantalla y toca <b>Calibrar</b>.</li>' +
       '<li>Sostenlo como el mango de la raqueta y haz <b>swing</b>.</li>',
@@ -291,8 +302,9 @@ const DICT = {
     'c.errHttps': 'Abre esta página con https:// para poder usar el giroscopio.',
     'c.errPermission': 'Sin permiso de movimiento. En iPhone: Ajustes → Safari → Movimiento y orientación, y recarga.',
     'c.errSensors': 'No se pudo activar el giroscopio.',
-    'c.errNoRoom': 'No existe la sala {code}. Revisa el código en la pantalla.',
+    'c.errNoRoom': 'No se encontró la pantalla con el código {code}. Revisa el código y que el celular esté en la misma Wi-Fi que la computadora.',
     'c.noGyro': 'No llegan datos del giroscopio. ¿Estás en un celular? Puedes usar el botón "Golpe".',
+    'c.unreachable': 'No se puede llegar a la pantalla. Conecta el celular a la misma Wi-Fi que la computadora.',
     'c.forehand': 'Drive',
     'c.backhand': 'Revés',
     'c.overWin': '¡Ganaste el partido! 🏆 Swing para la revancha',

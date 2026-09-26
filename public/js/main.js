@@ -8,12 +8,17 @@ import { SURFACES } from './physics.js';
 import { createRacketPreview } from './racketPreview.js';
 import { t, lang, applyI18n, setLang } from './i18n.js';
 import { createHostLink, mode } from './net.js';
+import { ENV } from './config.js';
 import { renderSVG } from '../vendor/uqr/index.mjs';
 
 const $ = (id) => document.getElementById(id);
 
 applyI18n();
 document.title = t('title');
+if (ENV === 'staging') {
+  document.title = `Staging · ${document.title}`;
+  document.body.insertAdjacentHTML('beforeend', '<div class="env-badge">STAGING</div>');
+}
 // Online (peer-to-peer) there is no local certificate to accept.
 if (mode === 'p2p') $('steps').innerHTML = t('menu.stepsOnline');
 

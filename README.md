@@ -164,6 +164,18 @@ Add `?lang=en` or `?lang=es` to any URL to force a language.
 - **Swings aren't detected, or trigger too easily.** Change the swing
   sensitivity in the phone's Settings panel.
 
+## Environments
+
+| Environment | Branch | URL |
+| --- | --- | --- |
+| Production | `main` | https://doncebay.github.io/tennis-training/ |
+| Staging | `staging` | https://doncebay.github.io/tennis-training/staging/ |
+
+New work lands on `staging` first; once it has been tried on real phones, merge
+it into `main`. A push to either branch redeploys both versions. Staging shows
+an orange **STAGING** badge and uses its own peer-to-peer rooms, so testers never
+connect to the public version by accident.
+
 ## Contributing
 
 Issues and pull requests are welcome. There is no build step: edit the files in

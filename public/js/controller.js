@@ -2,9 +2,14 @@
 // (a quaternion), detects swings and sends everything to the game screen.
 import { t, applyI18n } from './i18n.js';
 import { createControllerLink } from './net.js';
+import { ENV } from './config.js';
 
 applyI18n();
 document.title = t('c.pageTitle');
+if (ENV === 'staging') {
+  document.title = `Staging · ${document.title}`;
+  document.body.insertAdjacentHTML('beforeend', '<div class="env-badge">STAGING</div>');
+}
 
 const $ = (id) => document.getElementById(id);
 const DEG = Math.PI / 180;

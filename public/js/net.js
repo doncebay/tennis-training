@@ -5,13 +5,15 @@
 //    to the screen over a WebRTC data channel; PeerJS's free public broker is
 //    only used to introduce the two devices.
 // Both sides exchange the same small JSON messages ({t: 'q' | 'swing' | ...}).
-import { MODE } from './config.js';
+import { MODE, ENV } from './config.js';
 
 const params = new URLSearchParams(location.search);
 const forced = params.get('mode');
 export const mode = forced === 'p2p' || forced === 'server' ? forced : MODE;
 
-const PEER_PREFIX = 'tennis-training-';
+// Staging gets its own namespace on the broker so test screens and phones
+// never meet the public ones.
+const PEER_PREFIX = ENV === 'staging' ? 'tennis-training-staging-' : 'tennis-training-';
 const CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
 const randomCode = () =>
   Array.from({ length: 4 }, () => CODE_CHARS[Math.floor(Math.random() * CODE_CHARS.length)]).join('');

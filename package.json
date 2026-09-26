@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "start": "node server.js",
-    "build:static": "node scripts/build-static.js"
+    "build:static": "node scripts/build-static.js",
+    "build:staging": "node scripts/build-static.js --staging"
   },
   "keywords": [
     "tennis",

@@ -664,3 +664,21 @@ button.primary:hover {
   padding: 14px 24px;
   font-weight: 700;
 }
+
+/* ---------- Staging badge ---------- */
+.env-badge {
+  position: fixed;
+  left: 50%;
+  bottom: max(8px, env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  z-index: 50;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: #ff8a00;
+  color: #1a0f00;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  pointer-events: none;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+}

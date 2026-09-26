@@ -1,9 +1,12 @@
 # Publishes the static, peer-to-peer version of the game to GitHub Pages.
+# Production (branch `main`) is served at the site root and staging (branch
+# `staging`) under /staging/. A push to either branch rebuilds both, because
+# every Pages deployment replaces the whole site.
 name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: [main]
+    branches: [main, staging]
   workflow_dispatch:
 
 permissions:
@@ -22,16 +25,38 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - uses: actions/checkout@v7
+      - name: Check out production (main)
+        uses: actions/checkout@v7
+        with:
+          ref: main
+          path: production
+      - name: Check out staging
+        uses: actions/checkout@v7
+        with:
+          ref: staging
+          path: staging
       - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
-      - run: npm ci
-      - run: npm run build:static
+          cache-dependency-path: |
+            production/package-lock.json
+            staging/package-lock.json
+      - name: Build production
+        working-directory: production
+        run: npm ci && npm run build:static
+      - name: Build staging
+        working-directory: staging
+        run: npm ci && npm run build:staging
+      - name: Assemble site
+        run: |
+          mkdir site
+          cp -R production/dist/. site/
+          mkdir site/staging
+          cp -R staging/dist/. site/staging/
       - uses: actions/configure-pages@v6
       - uses: actions/upload-pages-artifact@v5
         with:
-          path: dist
+          path: site
       - id: deployment
         uses: actions/deploy-pages@v5

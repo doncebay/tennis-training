@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+    <meta name="theme-color" content="#0b1d33" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <title>Racket · Tennis Training</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎾</text></svg>" />
+    <link rel="stylesheet" href="/css/controller.css" />
+  </head>
+  <body>
+    <!-- Step 1: connect -->
+    <main id="connect" class="screen show">
+      <div class="logo"></div>
+      <h1 data-i18n="c.title">Your racket</h1>
+      <p class="muted" data-i18n="c.enterCode">Enter the code shown on the screen.</p>
+      <input id="room" maxlength="4" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="ABCD" />
+      <div class="seg" id="hand">
+        <button data-v="1" class="on" data-i18n="c.right">Right-handed</button>
+        <button data-v="-1" data-i18n="c.left">Left-handed</button>
+      </div>
+      <button id="go" class="primary" data-i18n="c.connect">Connect</button>
+      <p id="err" class="err"></p>
+      <p class="muted small" data-i18n="c.motionNote">You'll be asked for permission to use the phone's motion sensors (gyroscope).</p>
+    </main>
+
+    <!-- Step 2: play -->
+    <main id="pad" class="screen">
+      <div class="top">
+        <span id="status" class="pill" data-i18n="c.connecting">Connecting…</span>
+        <span id="roomtag" class="pill"></span>
+      </div>
+
+      <div id="message" class="message"></div>
+
+      <div class="meter-wrap">
+        <div id="ring" class="ring">
+          <div id="racket" class="racket-icon">
+            <div class="head"></div>
+            <div class="handle"></div>
+          </div>
+        </div>
+        <div class="meter"><div id="meter-fill"></div><div id="meter-th"></div></div>
+        <div id="swing-label" class="swing-label"></div>
+      </div>
+
+      <p id="hint" class="hint" data-i18n-html="c.hintCalibrate"></p>
+
+      <div class="actions">
+        <button id="calibrate" class="primary" data-i18n="c.calibrate">🎯 Calibrate</button>
+        <button id="tap" data-i18n="c.tap">Hit (tap)</button>
+      </div>
+
+      <details class="settings">
+        <summary data-i18n="c.settings">Settings</summary>
+        <div class="row">
+          <span data-i18n="c.hand">Hand</span>
+          <div class="seg" id="hand2">
+            <button data-v="1" class="on" data-i18n="c.right">Right-handed</button>
+            <button data-v="-1" data-i18n="c.left">Left-handed</button>
+          </div>
+        </div>
+        <div class="row">
+          <span data-i18n="c.sensitivity">Swing sensitivity</span>
+          <div class="seg" id="sens">
+            <button data-v="420" data-i18n="c.low">Low</button>
+            <button data-v="300" class="on" data-i18n="c.medium">Medium</button>
+            <button data-v="200" data-i18n="c.high">High</button>
+          </div>
+        </div>
+        <p id="debug" class="muted small mono"></p>
+      </details>
+    </main>
+
+    <script type="module" src="/js/controller.js"></script>
+  </body>
+</html>

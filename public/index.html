@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Tennis Training</title>
+    <meta name="description" content="First-person tennis in the browser. Your phone is the racket: its gyroscope drives the swing." />
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎾</text></svg>" />
+    <link rel="stylesheet" href="/css/game.css" />
+    <script type="importmap">
+      { "imports": { "three": "/vendor/three/three.module.js", "three/addons/": "/vendor/three/addons/" } }
+    </script>
+  </head>
+  <body>
+    <canvas id="game"></canvas>
+
+    <!-- Scoreboard -->
+    <div id="scoreboard">
+      <div class="row">
+        <span class="serve" id="s-me"></span><span class="name" data-i18n="hud.you">YOU</span>
+        <span class="games" id="g-me">0</span><span class="points" id="p-me">0</span>
+      </div>
+      <div class="row">
+        <span class="serve" id="s-cpu"></span><span class="name" data-i18n="hud.cpu">CPU</span>
+        <span class="games" id="g-cpu">0</span><span class="points" id="p-cpu">0</span>
+      </div>
+      <div class="foot" id="sb-diff">Normal</div>
+    </div>
+
+    <div id="topright">
+      <div id="speed"></div>
+      <div id="conn" class="pill" data-i18n="hud.mouseMode">🖱️ Mouse mode</div>
+      <button id="sound" class="pill" data-i18n="hud.soundLocked">🔇 Click to enable sound</button>
+      <button id="fullscreen" class="pill" data-i18n-attr="title:hud.fullscreen;aria-label:hud.fullscreen">⛶</button>
+    </div>
+
+    <div id="toast"><div id="toast-title"></div><div id="toast-sub"></div></div>
+    <div id="feedback"></div>
+    <div id="hint"></div>
+
+    <!-- Menu / pairing -->
+    <div id="menu" class="overlay show">
+      <div class="menu">
+        <header class="menu-head">
+          <div class="brand">
+            <div class="ball-logo"></div>
+            <div>
+              <h1 data-i18n="title">Tennis Training</h1>
+              <p class="tag" data-i18n="tagline">Your phone is the racket. First-person tennis, powered by the gyroscope.</p>
+            </div>
+          </div>
+          <div class="head-right">
+            <div class="seg small-seg" id="opt-lang" role="group" data-i18n-attr="aria-label:menu.language">
+              <button data-v="en">EN</button>
+              <button data-v="es">ES</button>
+            </div>
+            <span id="ctrl-pill" class="pill" data-i18n="menu.ctrlWaiting">📱 Waiting for phone</span>
+          </div>
+        </header>
+
+        <div class="menu-grid">
+          <section class="panel connect">
+            <h2><span class="step">1</span><span data-i18n="menu.step1">Connect your racket</span></h2>
+            <div class="qr-wrap"><img id="qr" data-i18n-attr="alt:menu.qrAlt" alt="QR code to connect your phone" /></div>
+            <div class="code-line"><span data-i18n="menu.code">Code</span> <b id="code">····</b></div>
+            <div class="url" id="url"></div>
+            <div id="ctrl-status" class="status" data-i18n="menu.statusWaiting">Waiting for the phone…</div>
+            <details class="steps">
+              <summary data-i18n="menu.stepsTitle">Step by step</summary>
+              <ol data-i18n-html="menu.steps"></ol>
+            </details>
+          </section>
+
+          <section class="panel setup">
+            <h2><span class="step">2</span><span data-i18n="menu.step2">Set up the match</span></h2>
+
+            <div class="field">
+              <span class="label" data-i18n="menu.court">Court</span>
+              <div class="courts" id="opt-court">
+                <button data-v="hard" class="court">
+                  <svg viewBox="0 0 132 72" aria-hidden="true"><rect width="132" height="72" rx="9" fill="#3f7f5f"/><rect x="12" y="7" width="108" height="58" rx="2" fill="#2d5d9f"/><g fill="none" stroke="#fff" stroke-width="1.4"><rect x="18" y="12" width="96" height="48"/><path d="M18 18H114M18 54H114M40 18V54M92 18V54M40 36H92"/></g><path d="M66 8V64" stroke="#0b1d33" stroke-width="2.2" stroke-dasharray="2 1.5"/></svg>
+                  <b data-i18n="surface.hard">Hard</b>
+                  <small data-i18n="surfaceMeta.hard">Fast · medium bounce</small>
+                </button>
+                <button data-v="clay" class="court">
+                  <svg viewBox="0 0 132 72" aria-hidden="true"><rect width="132" height="72" rx="9" fill="#b9593a"/><rect x="12" y="7" width="108" height="58" rx="2" fill="#c4643c"/><g fill="none" stroke="#fff" stroke-width="1.4"><rect x="18" y="12" width="96" height="48"/><path d="M18 18H114M18 54H114M40 18V54M92 18V54M40 36H92"/></g><path d="M66 8V64" stroke="#0b1d33" stroke-width="2.2" stroke-dasharray="2 1.5"/></svg>
+                  <b data-i18n="surface.clay">Clay</b>
+                  <small data-i18n="surfaceMeta.clay">Slow · high bounce</small>
+                </button>
+                <button data-v="grass" class="court">
+                  <svg viewBox="0 0 132 72" aria-hidden="true"><defs><pattern id="st-grass" width="12" height="72" patternUnits="userSpaceOnUse"><rect width="12" height="72" fill="#4b8b39"/><rect width="6" height="72" fill="#ffffff" opacity="0.09"/></pattern></defs><rect width="132" height="72" rx="9" fill="#437f33"/><rect x="12" y="7" width="108" height="58" rx="2" fill="url(#st-grass)"/><g fill="none" stroke="#fff" stroke-width="1.4"><rect x="18" y="12" width="96" height="48"/><path d="M18 18H114M18 54H114M40 18V54M92 18V54M40 36H92"/></g><path d="M66 8V64" stroke="#0b1d33" stroke-width="2.2" stroke-dasharray="2 1.5"/></svg>
+                  <b data-i18n="surface.grass">Grass</b>
+                  <small data-i18n="surfaceMeta.grass">Very fast · low bounce</small>
+                </button>
+              </div>
+            </div>
+
+            <div class="field">
+              <span class="label" data-i18n="menu.racket">Racket</span>
+              <div class="racket-pick">
+                <canvas id="racket-preview" data-i18n-attr="aria-label:menu.racketPreview"></canvas>
+                <div class="racket-side">
+                  <b id="racket-name" class="racket-name"></b>
+                  <div class="swatches" id="opt-racket"></div>
+                  <p class="small" data-i18n="menu.racketDrag">Drag the racket to spin it.</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="field-row">
+              <div class="field">
+                <span class="label" data-i18n="menu.difficulty">Difficulty</span>
+                <div class="seg" id="opt-diff">
+                  <button data-v="easy" data-i18n="diff.easy">Easy</button>
+                  <button data-v="normal" data-i18n="diff.normal">Normal</button>
+                  <button data-v="hard" data-i18n="diff.hard">Hard</button>
+                </div>
+              </div>
+              <div class="field">
+                <span class="label" data-i18n="menu.games">Games to win</span>
+                <div class="seg" id="opt-games">
+                  <button data-v="1">1</button>
+                  <button data-v="3">3</button>
+                  <button data-v="6">6</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="play-row">
+              <button id="play" class="primary" data-i18n="menu.play">Play</button>
+              <p class="small" data-i18n-html="menu.orSwing">or <b>swing</b> your phone</p>
+            </div>
+          </section>
+        </div>
+
+        <footer class="menu-foot">
+          <details class="tips">
+            <summary data-i18n="menu.howTitle">How to play</summary>
+            <div data-i18n-html="menu.how"></div>
+          </details>
+          <p class="small" data-i18n-html="menu.keys"></p>
+        </footer>
+      </div>
+    </div>
+
+    <!-- End of match -->
+    <div id="over" class="overlay">
+      <div class="card small-card">
+        <h2 id="over-title"></h2>
+        <div id="over-score" class="big-score"></div>
+        <div id="over-stats" class="stats"></div>
+        <div class="actions">
+          <button id="again" class="primary" data-i18n="over.rematch">Rematch</button>
+          <button id="to-menu" data-i18n="over.menu">Menu</button>
+        </div>
+        <p class="small" data-i18n="over.swingHint">You can also swing your phone for a rematch.</p>
+      </div>
+    </div>
+
+    <script type="module" src="/js/main.js"></script>
+  </body>
+</html>

@@ -1,0 +1,38 @@
+{
+  "name": "tennis-training",
+  "version": "1.0.0",
+  "description": "First-person tennis in the browser where your phone is the racket (gyroscope motion controls, Wii Sports style).",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "keywords": [
+    "tennis",
+    "game",
+    "threejs",
+    "webgl",
+    "gyroscope",
+    "motion-controls",
+    "websocket",
+    "wii-sports"
+  ],
+  "author": "doncebay",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/doncebay/tennis-training.git"
+  },
+  "homepage": "https://github.com/doncebay/tennis-training#readme",
+  "bugs": {
+    "url": "https://github.com/doncebay/tennis-training/issues"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "qrcode": "^1.5.4",
+    "selfsigned": "^5.5.0",
+    "three": "^0.186.1",
+    "ws": "^8.21.3"
+  }
+}
